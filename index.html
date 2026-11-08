@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>File Studio</title>
+<style>
+  :root{
+    --bg:#0A0F1F; --bg2:#0d1430; --panel:#121a3a; --panel2:#18204a;
+    --line:#26305f; --text:#e8ecfb; --muted:#9aa4c8; --accent:#5b7cff; --accent2:#8a5bff;
+    --green:#3ddc97; --red:#ff6b7d; --grad:linear-gradient(135deg,var(--accent),var(--accent2));
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:
+      radial-gradient(1200px 500px at 15% -10%, #16205010, transparent),
+      radial-gradient(900px 500px at 110% 0%, #2a1d5a20, transparent),
+      var(--bg);
+    color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif;
+    min-height:100vh; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:900px;margin:0 auto;padding:26px 16px 60px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .logo{width:46px;height:46px;border-radius:13px;background:var(--grad);display:grid;place-items:center;flex:none;box-shadow:0 8px 24px #5b7cff40}
+  .logo svg{width:26px;height:26px;color:#fff}
+  h1{font-size:26px;margin:0;font-weight:800;letter-spacing:-.5px}
+  .sub{color:var(--muted);font-size:13.5px;margin-top:1px}
+  .langs{margin-left:auto;display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:3px}
+  .langs button{border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:700;padding:6px 9px;border-radius:9px;cursor:pointer}
+  .langs button.on{background:var(--grad);color:#fff}
+
+  .tabs{display:flex;gap:7px;margin:22px 0 18px;flex-wrap:wrap}
+  .tab{flex:1;min-width:120px;border:1px solid var(--line);background:var(--panel);color:var(--muted);
+    padding:12px 10px;border-radius:13px;cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s}
+  .tab svg{width:18px;height:18px}
+  .tab.on{background:var(--panel2);color:var(--text);border-color:var(--accent)}
+  .tab:hover{border-color:#36427e}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+  .page{display:none}
+  .page.on{display:block}
+  h2{font-size:17px;margin:0 0 4px}
+  .hint{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 16px}
+
+  .drop{border:2px dashed #33407a;border-radius:14px;padding:30px 18px;text-align:center;cursor:pointer;transition:.15s;background:var(--bg2)}
+  .drop:hover,.drop.hot{border-color:var(--accent);background:#141c42}
+  .drop svg{width:40px;height:40px;color:var(--accent);margin-bottom:8px}
+  .drop b{display:block;font-size:15px}
+  .drop span{color:var(--muted);font-size:12.5px}
+
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:16px}
+  .fld{display:flex;flex-direction:column;gap:6px}
+  .fld label{font-size:12px;color:var(--muted);font-weight:600}
+  select,input[type=text],input[type=number]{background:var(--bg2);border:1px solid var(--line);color:var(--text);
+    border-radius:11px;padding:10px 12px;font-size:14px;outline:none;font-family:inherit}
+  select:focus,input:focus{border-color:var(--accent)}
+  input[type=range]{accent-color:var(--accent)}
+  input[type=color]{width:46px;height:40px;padding:2px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)}
+
+  .btn{border:0;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px}
+  .btn svg{width:17px;height:17px}
+  .btn.p{background:var(--grad);color:#fff;box-shadow:0 6px 18px #5b7cff33}
+  .btn.g{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+  .btn.d{background:#2a1430;color:var(--red);border:1px solid #5a2740}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn:active{transform:translateY(1px)}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+
+  .files{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .frow{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+  .frow img{width:40px;height:40px;object-fit:cover;border-radius:8px;background:#0a0f20;flex:none}
+  .frow .fi{flex:none;width:40px;height:40px;border-radius:8px;background:#0a0f20;display:grid;place-items:center;color:var(--accent);font-size:11px;font-weight:700}
+  .frow .fn{flex:1;min-width:0}
+  .frow .fn b{font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .frow .fn span{font-size:11.5px;color:var(--muted)}
+  .frow .x{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:2px 6px}
+  .frow .x:hover{color:var(--red)}
+
+  .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:16px}
+  .th{position:relative;border:2px solid var(--line);border-radius:10px;overflow:hidden;background:#0a0f20;cursor:pointer}
+  .th.sel{border-color:var(--accent)}
+  .th canvas{width:100%;display:block}
+  .th .pg{position:absolute;bottom:3px;left:3px;background:#000a;color:#fff;font-size:10px;padding:1px 6px;border-radius:6px}
+  .th .mk{position:absolute;top:3px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--grad);color:#fff;font-size:12px;display:none;place-items:center}
+  .th.sel .mk{display:grid}
+  .th .rot{position:absolute;top:3px;left:3px;background:#000a;border:0;color:#fff;width:20px;height:20px;border-radius:6px;cursor:pointer;font-size:12px}
+
+  .editor{margin-top:16px}
+  .edtools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .edtools .mode{border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:10px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:600;display:flex;gap:7px;align-items:center}
+  .edtools .mode svg{width:15px;height:15px}
+  .edtools .mode.on{border-color:var(--accent);color:var(--text)}
+  .edstage{position:relative;display:inline-block;max-width:100%;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;touch-action:none}
+  .edstage canvas{display:block;max-width:100%}
+  #ovl{position:absolute;inset:0;cursor:crosshair}
+  .ednav{display:flex;align-items:center;gap:12px;margin-top:12px}
+  .ednav b{font-size:13px;color:var(--muted)}
+
+  .note{margin-top:14px;background:#141c42;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:12.5px;color:#c4cdf2;line-height:1.55}
+  .status{margin-top:14px;font-size:13px;color:var(--muted);min-height:18px}
+  .status.busy{color:var(--accent)}
+  .status.ok{color:var(--green)}
+  .status.err{color:var(--red)}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:28px}
+  .hidden{display:none!important}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid #ffffff55;border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg></div>
+    <div>
+      <h1>File Studio</h1>
+      <div class="sub" data-t="sub"></div>
+    </div>
+    <div class="langs" id="langs">
+      <button data-l="az" class="on">AZ</button>
+      <button data-l="en">EN</button>
+      <button data-l="tr">TR</button>
+      <button data-l="ru">RU</button>
+    </div>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <div class="tab on" data-p="img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg><span data-t="tImg"></span></div>
+    <div class="tab" data-p="topdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span data-t="tToPdf"></span></div>
+    <div class="tab" data-p="pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg><span data-t="tPdf"></span></div>
+    <div class="tab" data-p="edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span data-t="tEdit"></span></div>
+  </div>
+
+  <!-- ===================== IMAGE CONVERTER ===================== -->
+  <div class="page on" id="p-img">
+    <div class="card">
+      <h2 data-t="imgH"></h2>
+      <p class="hint" data-t="imgHint"></p>
+      <div class="drop" id="imgDrop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+        <b data-t="dropB"></b><span data-t="dropImg"></span>
+      </div>
+      <input type="file" id="imgIn" accept="image/*" multiple class="hidden">
+      <div class="files" id="imgList"></div>
+      <div class="row">
+        <div class="fld"><label data-t="fmt"></label>
+          <select id="imgFmt"><option value="png">PNG</option><option value="jpeg">JPG</option><option value="webp">WEBP</option></select>
+        </div>
+        <div class="fld"><label data-t="maxw"></label><input type="number" id="imgMaxW" placeholder="—" style="width:90px"></div>
+        <div class="fld"><label data-t="qual"></label><input type="range" id="imgQ" min="30" max="100" value="92" style="width:120px"><span id="imgQv" style="font-size:12px;color:var(--muted)">92%</span></div>
+      </div>
+      <div class="bar">
+        <button class="btn p" id="imgGo" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/><path d="M21 3v6h-6"/></svg><span data-t="convert"></span></button>
+        <button class="btn g" id="imgClear" data-t="clear"></button>
+      </div>
+      <div class="status" id="imgStatus"></div>
+    </div>
+  </div>
+
+  <!-- ===================== TO PDF ===================== -->
+  <div class="page" id="p-topdf">
+    <div class="card">
+      <h2 data-t="toPdfH"></h2>
+      <p class="hint" data-t="toPdfHint"></p>
+      <div class="drop" id="pdfDrop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+        <b data-t="dropB"></b><span data-t="dropToPdf"></span>
+      </div>
+      <input type="file" id="toPdfIn" accept="image/*,.txt,.md,.markdown,.html,.htm,.docx" multiple class="hidden">
+      <div class="files" id="toPdfList"></div>
+      <div class="row">
+        <div class="fld"><label data-t="pageSize"></label>
+          <select id="pdfSize"><option value="a4">A4</option><option value="letter">Letter</option><option value="fit" data-t="fitImg"></option></select>
+        </div>
+        <div class="fld"><label data-t="orient"></label>
+          <select id="pdfOrient"><option value="auto" data-t="orAuto"></option><option value="p" data-t="orP"></option><option value="l" data-t="orL"></option></select>
+        </div>
+      </div>
+      <div class="bar">
+        <button class="btn p" id="toPdfGo" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span data-t="makePdf"></span></button>
+        <button class="btn g" id="toPdfClear" data-t="clear"></button>
+      </div>
+      <div class="status" id="toPdfStatus"></div>
+      <div class="note" data-t="toPdfNote"></div>
+    </div>
+  </div>
+
+  <!-- ===================== PDF TOOLKIT ===================== -->
+  <div class="page" id="p-pdf">
+    <div class="card">
+      <h2 data-t="pdfH"></h2>
+      <p class="hint" data-t="pdfHint"></p>
+      <div class="drop" id="tkDrop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+        <b data-t="dropB"></b><span data-t="dropPdf"></span>
+      </div>
+      <input type="file" id="tkIn" accept="application/pdf,image/*" multiple class="hidden">
+      <div class="status" id="tkStatus"></div>
+      <div class="thumbs" id="tkThumbs"></div>
+      <div class="bar" id="tkBar" style="display:none">
+        <button class="btn g" id="tkAll" data-t="selAll"></button>
+        <button class="btn g" id="tkNone" data-t="selNone"></button>
+        <button class="btn p" id="tkPdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span data-t="savePdf"></span></button>
+        <button class="btn g" id="tkImgs"><span data-t="saveImgs"></span></button>
+      </div>
+      <div class="row" id="tkOpts" style="display:none">
+        <div class="fld"><label data-t="quality2"></label>
+          <select id="tkQ"><option value="high" data-t="qHigh"></option><option value="mid" selected data-t="qMid"></option><option value="low" data-t="qLow"></option></select>
+        </div>
+        <div class="fld"><label data-t="imgFmt2"></label>
+          <select id="tkImgFmt"><option value="png">PNG</option><option value="jpeg">JPG</option></select>
+        </div>
+      </div>
+      <div class="note" data-t="pdfNote"></div>
+    </div>
+  </div>
+
+  <!-- ===================== PDF EDITOR ===================== -->
+  <div class="page" id="p-edit">
+    <div class="card">
+      <h2 data-t="editH"></h2>
+      <p class="hint" data-t="editHint"></p>
+      <div class="drop" id="edDrop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 21h14"/></svg>
+        <b data-t="dropB"></b><span data-t="dropEdit"></span>
+      </div>
+      <input type="file" id="edIn" accept="application/pdf" class="hidden">
+      <input type="file" id="edImgIn" accept="image/*" class="hidden">
+      <div class="editor hidden" id="edWrap">
+        <div class="edtools">
+          <div class="mode on" data-m="erase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H9L4 15a2 2 0 0 1 0-3l8-8 8 8-6 6"/></svg><span data-t="mErase"></span></div>
+          <div class="mode" data-m="text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg><span data-t="mText"></span></div>
+          <div class="mode" data-m="image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg><span data-t="mImage"></span></div>
+          <input type="color" id="edColor" value="#ffffff" title="rəng">
+          <div class="fld" style="gap:3px"><input type="range" id="edSize" min="8" max="72" value="20" style="width:90px"><span style="font-size:11px;color:var(--muted)" id="edSizeV">20px</span></div>
+        </div>
+        <div class="edstage" id="edStage">
+          <canvas id="edCanvas"></canvas>
+          <canvas id="ovl"></canvas>
+        </div>
+        <div class="ednav">
+          <button class="btn g" id="edPrev">‹</button>
+          <b id="edPageLbl">1 / 1</b>
+          <button class="btn g" id="edNext">›</button>
+          <button class="btn g" id="edUndo" data-t="undo"></button>
+          <button class="btn d" id="edClearPage" data-t="clearPage"></button>
+        </div>
+        <div class="bar">
+          <button class="btn p" id="edSave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg><span data-t="saveEdit"></span></button>
+          <button class="btn g" id="edReset" data-t="newFile"></button>
+        </div>
+        <div class="status" id="edStatus"></div>
+        <div class="note" data-t="editNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>File Studio · Eldaniz Omarov · <span data-t="footer"></span></footer>
+</div>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
